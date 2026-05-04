@@ -1,0 +1,244 @@
+@page "/dashboard"
+@using Agri.ReadModel.Blazor.Services
+@using Agri.ReadModel.Models
+@using Microsoft.AspNetCore.SignalR.Client
+@using Agri.Contracts.V1
+@using Agri.ReadModel.Blazor.Hubs
+@using MudBlazor
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IDashboardStateService DashboardState
+@implements IAsyncDisposable
+
+<MudGrid Spacing="3" Justify="Justify.Center">
+    @* --- TEMPERATURE --- *@
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="pa-4 mud-theme-primary" Style="height: 100%">
+            <div class="d-flex justify-space-between align-center">
+                <MudText Typo="Typo.h6">Temperature</MudText>
+                <MudChip T="string" Color="@GetStatusColor(DashboardState.LatestTemperature?.Status)" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">
+                    @(DashboardState.LatestTemperature?.Status ?? "N/A")
+                </MudChip>
+            </div>
+            <MudText Typo="Typo.h4" Class="my-3">@(DashboardState.LatestTemperature?.Value.ToString("F2") ?? "N/A")°C</MudText>
+            <div class="d-flex align-center mt-2" style="opacity: 0.85;">
+                <MudIcon Icon="@GetStatusIcon(DashboardState.LatestTemperature?.Status)" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.caption" Style="font-family: 'Roboto Mono', monospace;">
+                    @($"{DashboardState.LatestTemperature?.OccuredOnUtc:HH:mm:ss} UTC")
+                </MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+    @* --- HUMIDITY --- *@
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="pa-4 mud-theme-secondary" Style="height: 100%">
+            <div class="d-flex justify-space-between align-center">
+                <MudText Typo="Typo.h6">Humidity</MudText>
+                <MudChip T="string" Color="@GetStatusColor(DashboardState.LatestHumidity?.Status)" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">
+                    @(DashboardState.LatestHumidity?.Status ?? "N/A")
+                </MudChip>
+            </div>
+            <MudText Typo="Typo.h4" Class="my-3">@(DashboardState.LatestHumidity?.Value.ToString("F2") ?? "N/A")%</MudText>
+            <div class="d-flex align-center mt-2" style="opacity: 0.85;">
+                <MudIcon Icon="@GetStatusIcon(DashboardState.LatestHumidity?.Status)" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.caption" Style="font-family: 'Roboto Mono', monospace;">
+                    @($"{DashboardState.LatestHumidity?.OccuredOnUtc:HH:mm:ss} UTC")
+                </MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+    @* --- PH --- *@
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="pa-4 mud-theme-info" Style="height: 100%">
+            <div class="d-flex justify-space-between align-center">
+                <MudText Typo="Typo.h6">pH</MudText>
+                <MudChip T="string" Color="@GetStatusColor(DashboardState.LatestPh?.Status)" Size="Size.Small" Variant="Variant.Filled" Class="ma-0">
+                    @(DashboardState.LatestPh?.Status ?? "N/A")
+                </MudChip>
+            </div>
+            <MudText Typo="Typo.h4" Class="my-3">@(DashboardState.LatestPh?.Value.ToString("F2") ?? "N/A")</MudText>
+            <div class="d-flex align-center mt-2" style="opacity: 0.85;">
+                <MudIcon Icon="@GetStatusIcon(DashboardState.LatestPh?.Status)" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.caption" Style="font-family: 'Roboto Mono', monospace;">
+                    @($"{DashboardState.LatestPh?.OccuredOnUtc:HH:mm:ss} UTC")
+                </MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+<MudGrid Spacing="3" Justify="Justify.Center" Class="mt-4">
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4">
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.h6">Temperature History</MudText>
+                <MudText Typo="Typo.caption" Style="color: #616161; font-weight: bold;">
+                    Media: @(DashboardState.TemperatureAverage)C°
+                </MudText>
+            </div>
+            @if (DashboardState.TemperatureReadings.Any())
+            {
+                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_temperatureSeries" XAxisLabels="@_temperatureXAxisLabels" Width="100%" Height="350px" ChartOptions="@_chartOptions"></MudChart>
+            }
+            else
+            {
+                <MudText>No temperature data yet.</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4">
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.h6">Humidity History</MudText>
+                <MudText Typo="Typo.caption" Style="color: #616161; font-weight: bold;">
+                    Media: @(DashboardState.HumidityAverage)%
+                </MudText>
+            </div>
+
+            @if (DashboardState.HumidityReadings.Any())
+            {
+                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_humiditySeries" XAxisLabels="@_humidityXAxisLabels" Width="100%" Height="350px" ChartOptions="@_chartOptions"></MudChart>
+            }
+            else
+            {
+                <MudText>No humidity data yet.</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4">
+            <div class="d-flex justify-space-between align-center mb-2">
+                <MudText Typo="Typo.h6">pH History</MudText>
+                <MudText Typo="Typo.caption" Style="color: #616161; font-weight: bold;">
+                    Media: @(DashboardState.PhAverage)
+                </MudText>
+            </div>
+            @if (DashboardState.PhReadings.Any())
+            {
+                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_phSeries" XAxisLabels="@_phXAxisLabels" Width="100%" Height="350px" ChartOptions="@_chartOptions"></MudChart>
+            }
+            else
+            {
+                <MudText>No pH data yet.</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+    private HubConnection? _hubConnection;
+
+    private List<ChartSeries<double>> _temperatureSeries = new();
+    private List<ChartSeries<double>> _humiditySeries = new();
+    private List<ChartSeries<double>> _phSeries = new();
+    private string[] _temperatureXAxisLabels = Array.Empty<string>();
+    private string[] _humidityXAxisLabels = Array.Empty<string>();
+    private string[] _phXAxisLabels = Array.Empty<string>();
+
+    // Helper per i colori professionali
+    private Color GetStatusColor(string? status) => status switch
+    {
+        "Ok" => Color.Success,
+        "WarningLow" or "WarningHigh" => Color.Warning,
+        "TooLow" or "TooHigh" => Color.Error,
+        _ => Color.Default
+    };
+
+    // Helper per le icone professionali
+    private string GetStatusIcon(string? status) => status switch
+    {
+        "Ok" => Icons.Material.Filled.CheckCircle,
+        "WarningLow" or "WarningHigh" => Icons.Material.Filled.Warning,
+        "TooLow" or "TooHigh" => Icons.Material.Filled.Error,
+        _ => Icons.Material.Filled.Help
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var otherurl = "https://localhost:8081/datahub";
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(otherurl, options =>
+            {
+                options.HttpMessageHandlerFactory = handler => new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                };
+            })
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<TemperatureResponse>(nameof(IDataHubClient.ReceiveTemperatureData), (data) =>
+        {
+            DashboardState.AddTemperatureReading(data);
+            UpdateCharts();
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<HumidityResponse>(nameof(IDataHubClient.ReceiveHumidityData), (data) =>
+        {
+            DashboardState.AddHumidityReading(data);
+            UpdateCharts();
+            InvokeAsync(StateHasChanged);
+        });
+
+        _hubConnection.On<PhResponse>(nameof(IDataHubClient.ReceivePhData), (data) =>
+        {
+            DashboardState.AddPhReading(data);
+            UpdateCharts();
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+        UpdateCharts();
+    }
+
+    private void OnDashboardStateChanged()
+    {
+        UpdateCharts();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateCharts()
+    {
+        // --- TEMPERATURE ---
+        _temperatureSeries = new List<ChartSeries<double>>
+        {
+            new() { Name = "Temperature", Data = DashboardState.TemperatureReadings.Select(r => (double)r.Value).ToArray() },
+            new() { Name = "Trend (Media)", Data = DashboardState.TemperatureMovingAverage.ToArray() }
+        };
+
+        // --- HUMIDITY ---
+        _humiditySeries = new List<ChartSeries<double>>
+        {
+            new() { Name = "Humidity", Data = DashboardState.HumidityReadings.Select(r => (double)r.Value).ToArray() },
+            new() { Name = "Trend (Media)", Data = DashboardState.HumidityMovingAverage.ToArray() }
+        };
+
+        // --- PH ---
+        _phSeries = new List<ChartSeries<double>>
+        {
+            new() { Name = "Ph", Data = DashboardState.PhReadings.Select(r => (double)r.Value).ToArray() },
+            new() { Name = "Trend (Media)", Data = DashboardState.PhMovingAverage.ToArray() }
+        };
+
+        // Labels X Axis (Semplificate per evitare sovrapposizioni)
+        _temperatureXAxisLabels = DashboardState.TemperatureReadings.Select(r => r.OccuredOnUtc.ToString("mm:ss")).ToArray();
+        _humidityXAxisLabels = DashboardState.HumidityReadings.Select(r => r.OccuredOnUtc.ToString("mm:ss")).ToArray();
+        _phXAxisLabels = DashboardState.PhReadings.Select(r => r.OccuredOnUtc.ToString("mm:ss")).ToArray();
+    }
+
+    private readonly ChartOptions _chartOptions = new()
+    {
+        ChartPalette = new[] { "#594AE2", "#81C784" },
+
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null) await _hubConnection.DisposeAsync();
+    }
+}

@@ -1,0 +1,56 @@
+networks:
+  agri-rabbit-mq:
+    # driver: bridge
+
+services:
+  agri-rabbit-mq:
+    image: rabbitmq:management
+    container_name: agri-rabbit-mq
+    ports:
+      - "5672:5672"    
+      - "15672:15672"  
+    networks:
+      - agri-rabbit-mq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  agri.edge.worker:
+    image: ${DOCKER_REGISTRY-}agriedgeworker
+    build:
+      context: .
+      dockerfile: Agri.Edge/Agri.Edge.Worker/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8082:8081"
+    networks:
+      - agri-rabbit-mq
+    depends_on:
+      - agri-rabbit-mq
+
+  agri.processing.compositionroot:
+    image: ${DOCKER_REGISTRY-}agriprocessingcompositionroot
+    build:
+      context: .
+      dockerfile: Agri.Processing/Agri.Processing.CompositionRoot/Dockerfile
+    ports:
+      - "8090:8080"
+      - "8092:8081"
+    networks:
+      - agri-rabbit-mq
+    depends_on:
+      - agri-rabbit-mq
+
+  agri.readmodel.blazor:
+    image: ${DOCKER_REGISTRY-}agrireadmodelblazor
+    build:
+      context: .
+      dockerfile: Agri.ReadModel/Agri.ReadModel.Blazor/Dockerfile
+    ports:
+      - "8070:8080"
+      - "8072:8081"
+    networks:
+      - agri-rabbit-mq
+    depends_on:
+      - agri-rabbit-mq
+

@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "agri.edge.worker": "StartDebugging",
+        "agri.processing.compositionroot": "StartDebugging",
+        "agri.readmodel.blazor": "StartDebugging"
+      }
+    }
+  }
+}

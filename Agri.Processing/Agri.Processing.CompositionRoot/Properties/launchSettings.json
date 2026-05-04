@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Agri.Processing.CompositionRoot": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

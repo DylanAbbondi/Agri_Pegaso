@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Agri.Edge.Worker": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

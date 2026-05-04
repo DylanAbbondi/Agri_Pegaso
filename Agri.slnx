@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/Agri.Edge/">
+    <Project Path="Agri.Edge/Agri.Edge.Worker/Agri.Edge.Worker.csproj" Id="feefadc0-9bed-4d03-90a2-f5e5b2fa8a17" />
+  </Folder>
+  <Folder Name="/Agri.Processing/">
+    <Project Path="Agri.Processing/Agri.Processing.CompositionRoot/Agri.Processing.CompositionRoot.csproj" Id="770ed15d-aade-45c8-99f1-8d3d8df43bce" />
+  </Folder>
+  <Folder Name="/Agri.Processing/Core/">
+    <Project Path="Agri.Processing/Core/Agri.Processing.Application/Agri.Processing.Application.csproj" />
+    <Project Path="Agri.Processing/Core/Agri.Processing.Domain/Agri.Processing.Domain.csproj" Id="fd58faed-2c41-440d-ab33-4e3330ea4cc8" />
+  </Folder>
+  <Folder Name="/Agri.Processing/Inbound/">
+    <Project Path="Agri.Processing/Inbound/Agri.Processing.RabbitMq/Agri.Processing.Inbound.RabbitMq.csproj" />
+  </Folder>
+  <Folder Name="/Agri.Processing/Outbound/">
+    <Project Path="Agri.Processing/Outbound/Agri.Processing.RabbitMq/Agri.Processing.Outbound.RabbitMq.csproj" />
+  </Folder>
+  <Folder Name="/Agri.ReadModel/">
+    <Project Path="Agri.ReadModel/Agri.ReadModel.Blazor/Agri.ReadModel.Blazor.csproj" Id="9387cf82-d5d2-4db2-a797-115df51acb82" />
+  </Folder>
+  <Folder Name="/Agri.Test/">
+    <Project Path="Agri.Test/Agri.Test/Agri.Test.csproj" Id="46ac21df-cd40-48ae-8d0a-a3f7d22020a6" />
+  </Folder>
+  <Project Path="Agri.Contracts/Agri.Contracts.csproj" Id="1fa336a4-12b1-4366-8a80-3766d58246bf" />
+  <Project Path="Agri.Shared/Agri.Shared.csproj" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+</Solution>
