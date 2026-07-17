@@ -1,4 +1,4 @@
-name: .NET Enterprise Pipeline
+name: Agri CI/CD Pipeline
 
 on:
   push:
@@ -22,6 +22,20 @@ jobs:
       run: dotnet build Agri.slnx --no-restore
     - name: Test
       run: dotnet test Agri.slnx --no-build --verbosity normal
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+    - name: Restore dependencies
+      run: dotnet restore Agri.slnx
+    - name: Run Tests with Coverage
+      run: dotnet test Agri.slnx --no-restore --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
       
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -54,7 +68,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    needs: [build, analyze]
+    needs: [test, analyze]
     if: github.event_name == 'push'
     
     steps:
