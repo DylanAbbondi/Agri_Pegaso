@@ -77,4 +77,6 @@ jobs:
     - name: Build the Docker image
       run: |
         SHA_SHORT=$(git rev-parse --short HEAD)
-        docker build . --file Dockerfile --tag my-image-name:${SHA_SHORT}
+        docker build . --file Agri.Edge/Agri.Edge.Worker/Dockerfile --tag agri-edge-worker:${SHA_SHORT}
+        docker build . --file Agri.Processing/Agri.Processing.CompositionRoot/Dockerfile --tag agri-processing:${SHA_SHORT}
+        docker build . --file Agri.ReadModel/Agri.ReadModel.Blazor/Dockerfile --tag agri-readmodel:${SHA_SHORT}
